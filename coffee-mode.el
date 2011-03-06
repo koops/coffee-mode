@@ -154,7 +154,7 @@ path."
      (apply 'make-comint "CoffeeREPL"
             coffee-command nil coffee-args-repl)))
 
-  (pop-to-buffer "*CoffeeScript*"))
+  (pop-to-buffer "*CoffeeREPL*"))
 
 (defun coffee-compile-file ()
   "Compiles and saves the current file to disk. Doesn't open in a buffer.."
@@ -181,7 +181,7 @@ path."
   (call-process-region start end coffee-command nil
                        (get-buffer-create coffee-compiled-buffer-name)
                        nil
-                       "-s" "-p" "--no-wrap")
+                       "-s" "-p" "--bare")
   (switch-to-buffer (get-buffer coffee-compiled-buffer-name))
   (funcall coffee-js-mode)
   (goto-char (point-min)))
@@ -470,7 +470,7 @@ For detail, see `comment-dwim'."
     (if (bobp)
         0
       (progn
-        (while (coffee-line-empty-p) (forward-line -1))
+        (while (and (coffee-line-empty-p) (not (bobp))) (forward-line -1))
         (current-indentation)))))
 
 (defun coffee-line-empty-p ()
@@ -581,6 +581,7 @@ line? Returns `t' or `nil'. See the README for more details."
   ;; perl style comment: "# ..."
   (modify-syntax-entry ?# "< b" coffee-mode-syntax-table)
   (modify-syntax-entry ?\n "> b" coffee-mode-syntax-table)
+  (make-local-variable 'comment-start)
   (setq comment-start "#")
 
   ;; single quote strings
@@ -589,7 +590,6 @@ line? Returns `t' or `nil'. See the README for more details."
   ;; indentation
   (make-local-variable 'indent-line-function)
   (setq indent-line-function 'coffee-indent-line)
-  (setq coffee-tab-width tab-width) ;; Just in case...
 
   ;; imenu
   (make-local-variable 'imenu-create-index-function)
